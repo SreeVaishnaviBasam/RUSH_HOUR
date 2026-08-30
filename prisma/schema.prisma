@@ -1,0 +1,49 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db?connection_limit=1&busy_timeout=30000"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  imageUrl    String   @default("")
+  category    String   @default("General")
+  total       Int
+  available   Int
+  orders      Order[]
+}
+
+model Order {
+  id             String   @id @default(uuid())
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id])
+  buyerId        String
+  quantity       Int      @default(1)
+  status         String   // 'reserved' | 'payment_pending' | 'confirmed' | 'failed' | 'expired'
+  idempotencyKey String   @unique
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  job            Job?
+
+  @@index([status])
+  @@index([expiresAt])
+  @@index([productId])
+}
+
+model Job {
+  id        String   @id @default(uuid())
+  orderId   String   @unique
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    String   // 'pending' | 'processing' | 'done'
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([status])
+}
