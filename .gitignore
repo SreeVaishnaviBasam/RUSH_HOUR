@@ -45,3 +45,7 @@ next-env.d.ts
 *.db-journal
 *.db-wal
 *.db-shm
+
+# local agent / internal notes files
+CLAUDE.md
+scale_notes.md
